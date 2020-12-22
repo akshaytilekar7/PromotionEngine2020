@@ -51,6 +51,9 @@ namespace PromotionEngine.Test
 
         }
 
+
+        #region Scenario for A
+
         static readonly object[] ScenariosForA =
         {
             // SCENARIO 1 : 3 A : final total cost : 150 - 30 = 120
@@ -61,7 +64,7 @@ namespace PromotionEngine.Test
         };
 
         [Test, TestCaseSource(nameof(ScenariosForA))]
-        public void ProcessBill_WhenPromotionRuleIsApplied_Then_CalculateTotalPrice(List<Cart> carts, int res)
+        public void ProcessBill_WhenPromotionRuleIsApplied_Then_CalculateTotalPrice_Scenario_For_A(List<Cart> carts, int res)
         {
             var promotionRule = new PromotionRule
             {
@@ -85,6 +88,9 @@ namespace PromotionEngine.Test
 
         }
 
+        #endregion
+
+        #region Scenario for B
 
         static readonly object[] ScenariosForB =
         {
@@ -94,7 +100,6 @@ namespace PromotionEngine.Test
             // SCENARIO 4 : 3 B : final total cost : (30 + 30 + 30) - 15 = 75
             new object[] { new List<Cart>() { new Cart(Constants.B, 3) }, 75 },
         };
-
 
         [Test, TestCaseSource(nameof(ScenariosForB))]
         public void ProcessBill_WhenPromotionRuleIsApplied_Then_CalculateTotalPrice_Scenario_For_B(List<Cart> carts, int res)
@@ -122,5 +127,48 @@ namespace PromotionEngine.Test
 
         }
 
+        #endregion
+
+        #region Scenario for C
+
+        [Test]
+        public void ProcessBill_WhenPromotionRuleIsApplied_Then_CalculateTotalPrice_Scenario5()
+        { // C + D : final total cost : (20 + 15) - 5 = 30
+
+            //Arrange
+            var carts = new List<Cart>()
+            {
+                new Cart(Constants.C,1),
+                new Cart(Constants.D,1)
+            };
+
+            var promotionRule = new PromotionRule
+            {
+                RuleName = "Rule_C",
+                SkuId = Constants.C,
+                NumberOfAppearance = 1,
+                LumpSumAmountToReduceFromPrice = 5,
+                PercentageToReduceFromPrice = 0,
+                ListOfAnotherItemsToBeConsidered = new List<char>() { Constants.D }
+            };
+
+            var itemC = new Item() { SkuId = Constants.C, Name = "C Name", Price = 20 };
+            var itemD = new Item() { SkuId = Constants.D, Name = "D Name", Price = 15 };
+
+            _promotionRuleServicesMock.Setup(x => x.GetPromotionRulesBySkuId(Constants.C)).Returns(promotionRule);
+            _itemServicesMock.Setup(x => x.GetItemBySkuId(Constants.C)).Returns(itemC);
+            _itemServicesMock.Setup(x => x.GetItemBySkuId(Constants.D)).Returns(itemD);
+
+
+            //Act
+            var totalPrice = _orderServices.ProcessBill(carts);
+
+            //Assert
+            Assert.AreEqual(totalPrice, 30);
+
+        }
+
+
+        #endregion
     }
 }

@@ -1,6 +1,7 @@
 ﻿using PromotionEngine.Models;
 using PromotionEngine.Services.Interfaces;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PromotionEngine.Services
 {
@@ -19,8 +20,11 @@ namespace PromotionEngine.Services
             var total = 0;
             foreach (var cart in carts)
             {
-                var promoRule = _promotionRuleServices.GetPromotionRulesBySkuId(cart.SkuId);
-                total += ApplyPromotionRule(carts, cart, promoRule);
+                if (cart.CountOfRemainingItemsForPromo != 0)
+                {
+                    var promoRule = _promotionRuleServices.GetPromotionRulesBySkuId(cart.SkuId);
+                    total += ApplyPromotionRule(carts, cart, promoRule);
+                }
             }
             return total;
         }
@@ -44,17 +48,32 @@ namespace PromotionEngine.Services
             var price = 0;
             var item = _itemServices.GetItemBySkuId(cart.SkuId);
 
-            // process until item count are applicable for promo rules
             while (promoRule.NumberOfAppearance <= cart.CountOfRemainingItemsForPromo && cart.CountOfRemainingItemsForPromo != 0)
             {
-                price += GetProductPrice(item, promoRule.NumberOfAppearance) - promoRule.LumpSumAmountToReduceFromPrice;
+                var isOtherItemExistInCart = true;
+                foreach (var otherItem in promoRule.ListOfAnotherItemsToBeConsidered)
+                {
+                    var anotherItem = _itemServices.GetItemBySkuId(otherItem);
+                    isOtherItemExistInCart = carts.Any(x => x.SkuId == anotherItem.SkuId);
+                    if (isOtherItemExistInCart)
+                    {
+                        price += anotherItem.Price;
+                        var cartItem = carts.First(x => x.SkuId == anotherItem.SkuId);
+                        cartItem.CountOfRemainingItemsForPromo = cartItem.CountOfRemainingItemsForPromo - promoRule.NumberOfAppearance;
+                    }
+                }
+                if (isOtherItemExistInCart)
+                    price += (GetProductPrice(item, promoRule.NumberOfAppearance) - promoRule.LumpSumAmountToReduceFromPrice);
+                else
+                    price += GetProductPrice(item, cart.CountOfRemainingItemsForPromo);
+
                 cart.CountOfRemainingItemsForPromo = cart.CountOfRemainingItemsForPromo - promoRule.NumberOfAppearance;
             }
 
-            if (cart.CountOfRemainingItemsForPromo > 0) // remaining item after promo rule, will process with normal calulation
+            if (cart.CountOfRemainingItemsForPromo > 0)
             {
                 price += GetProductPrice(item, cart.CountOfRemainingItemsForPromo);
-                cart.CountOfRemainingItemsForPromo = 0; // all item are processed
+                cart.CountOfRemainingItemsForPromo = 0;
             }
             return price;
         }
