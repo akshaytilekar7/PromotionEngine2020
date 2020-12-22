@@ -13,17 +13,17 @@ namespace PromotionEngine.Test
     [TestClass]
     public class OrderServicesTest
     {
-        private Mock<IPromotionRuleServices> _PromotionRuleServicesMock;
-        private Mock<IItemServices> _ItemServicesMock;
-        private OrderServices OrderServices;
+        private Mock<IPromotionRuleServices> _promotionRuleServicesMock;
+        private Mock<IItemServices> _itemServicesMock;
+        private OrderServices _orderServices;
 
         [TestInitialize]
         [SetUp]
         public void SetUp()
         {
-            _PromotionRuleServicesMock = new Mock<IPromotionRuleServices>();
-            _ItemServicesMock = new Mock<IItemServices>();
-            OrderServices = new OrderServices(_PromotionRuleServicesMock.Object, _ItemServicesMock.Object);
+            _promotionRuleServicesMock = new Mock<IPromotionRuleServices>();
+            _itemServicesMock = new Mock<IItemServices>();
+            _orderServices = new OrderServices(_promotionRuleServicesMock.Object, _itemServicesMock.Object);
         }
 
         [TestMethod]
@@ -37,29 +37,31 @@ namespace PromotionEngine.Test
 
             var item = new Item() { SkuId = Constants.A, Name = "A Name", Price = 50 };
 
-            _PromotionRuleServicesMock.Setup(x => x.GetPromotionRulesBySkuId(Constants.A))
+            _promotionRuleServicesMock.Setup(x => x.GetPromotionRulesBySkuId(Constants.A))
                 .Returns<PromotionRule>(null);
-            _ItemServicesMock.Setup(x => x.GetItemBySkuId(Constants.A)).Returns(item);
+            _itemServicesMock.Setup(x => x.GetItemBySkuId(Constants.A)).Returns(item);
 
             //Act
-            var totalPrice = OrderServices.ProcessBill(carts);
+            var totalPrice = _orderServices.ProcessBill(carts);
 
             //Assert
             Assert.AreEqual(totalPrice, 100);
 
         }
 
-        [TestMethod]
-        public void ProcessBill_WhenPromotionRuleIsApplied_Then_CalculateTotalPrice_Scenario1()
+        static readonly object[] Scenarios =
         {
-            // 3 A : final total cost : 150 - 30 = 120
+            // SCENARIO 1 : 3 A : final total cost : 150 - 30 = 120
+            new object[] { new List<Cart>() { new Cart(Constants.A, 3) }, 130 },
 
-            //Arrange
-            var carts = new List<Cart>()
-            {
-                new Cart(Constants.A,  3)
-            };
+            // SCENARIO 1 : final total cost : (150 - 30) + 50 = 180
+            new object[] { new List<Cart>() { new Cart(Constants.A, 4) }, 180 },
+        };
 
+
+        [Test, TestCaseSource(nameof(Scenarios))]
+        public void ProcessBill_WhenPromotionRuleIsApplied_Then_CalculateTotalPrice(List<Cart> carts, int res)
+        {
             var promotionRule = new PromotionRule
             {
                 RuleName = "Rule_A",
@@ -71,47 +73,15 @@ namespace PromotionEngine.Test
 
             var item = new Item() { SkuId = Constants.A, Name = "A Name", Price = 50 };
 
-            _PromotionRuleServicesMock.Setup(x => x.GetPromotionRulesBySkuId(Constants.A)).Returns(promotionRule);
-            _ItemServicesMock.Setup(x => x.GetItemBySkuId(Constants.A)).Returns(item);
+            _promotionRuleServicesMock.Setup(x => x.GetPromotionRulesBySkuId(Constants.A)).Returns(promotionRule);
+            _itemServicesMock.Setup(x => x.GetItemBySkuId(Constants.A)).Returns(item);
 
             //Act
-            var totalPrice = OrderServices.ProcessBill(carts);
+            var totalPrice = _orderServices.ProcessBill(carts);
 
             //Assert
-            Assert.AreEqual(totalPrice, 130);
+            Assert.AreEqual(totalPrice, res);
 
-        }
-
-        [TestMethod]
-        public void ProcessBill_WhenPromotionRuleIsApplied_Then_CalculateTotalPrice_Scenario2()
-        {
-            // 4 A : final total cost : (150 - 30) + 50 = 180
-
-            //Arrange
-            var carts = new List<Cart>()
-            {
-                new Cart(Constants.A,  4)
-            };
-
-            var promotionRule = new PromotionRule
-            {
-                RuleName = "Rule_A",
-                SkuId = Constants.A,
-                NumberOfAppearance = 3,
-                LumpSumAmountToReduceFromPrice = 20,
-                PercentageToReduceFromPrice = 0
-            };
-
-            var item = new Item() { SkuId = Constants.A, Name = "A Name", Price = 50 };
-
-            _PromotionRuleServicesMock.Setup(x => x.GetPromotionRulesBySkuId(Constants.A)).Returns(promotionRule);
-            _ItemServicesMock.Setup(x => x.GetItemBySkuId(Constants.A)).Returns(item);
-
-            //Act
-            var totalPrice = OrderServices.ProcessBill(carts);
-
-            //Assert
-            Assert.AreEqual(totalPrice, 180);
         }
     }
 }
