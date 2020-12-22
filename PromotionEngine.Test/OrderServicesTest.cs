@@ -130,44 +130,20 @@ namespace PromotionEngine.Test
         #endregion
 
         #region Scenario for C
-
-        [Test]
-        public void ProcessBill_WhenPromotionRuleIsApplied_Then_CalculateTotalPrice_Scenario5()
-        { // C + D : final total cost : (20 + 15) - 5 = 30
-
-            //Arrange
-            var carts = new List<Cart>()
+        static readonly object[] ScenariosForC =
+        {
+            // SCENARIO 3 : 2 B : final total cost : (30 + 30) - 15 = 45
+            new object[]
             {
-                new Cart(Constants.C,1),
-                new Cart(Constants.D,1)
-            };
+                new List<Cart>()
+                {
+                    new Cart(Constants.C,1),
+                    new Cart(Constants.D,2)
+                },
+                 45
+            },
 
-            var promotionRule = new PromotionRule
-            {
-                RuleName = "Rule_C",
-                SkuId = Constants.C,
-                NumberOfAppearance = 1,
-                LumpSumAmountToReduceFromPrice = 5,
-                PercentageToReduceFromPrice = 0,
-                ListOfAnotherItemsToBeConsidered = new List<char>() { Constants.D }
-            };
-
-            var itemC = new Item() { SkuId = Constants.C, Name = "C Name", Price = 20 };
-            var itemD = new Item() { SkuId = Constants.D, Name = "D Name", Price = 15 };
-
-            _promotionRuleServicesMock.Setup(x => x.GetPromotionRulesBySkuId(Constants.C)).Returns(promotionRule);
-            _itemServicesMock.Setup(x => x.GetItemBySkuId(Constants.C)).Returns(itemC);
-            _itemServicesMock.Setup(x => x.GetItemBySkuId(Constants.D)).Returns(itemD);
-
-
-            //Act
-            var totalPrice = _orderServices.ProcessBill(carts);
-
-            //Assert
-            Assert.AreEqual(totalPrice, 30);
-
-        }
-
+        };
 
         #endregion
     }
