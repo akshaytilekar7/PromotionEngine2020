@@ -1,5 +1,6 @@
 ﻿using PromotionEngine.Helpers;
 using PromotionEngine.Models;
+using PromotionEngine.Services.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
 
