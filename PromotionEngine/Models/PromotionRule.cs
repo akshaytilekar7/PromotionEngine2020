@@ -20,5 +20,7 @@ namespace PromotionEngine.Models
         public int LumpSumAmountToReduceFromPrice { get; set; }
 
         public List<char> ListOfAnotherItemsToBeConsidered { get; set; }
+
+
     }
 }

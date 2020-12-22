@@ -32,9 +32,37 @@ namespace PromotionEngine.Services
             if (promoRule == null)
                 return cart.TotalCount * item.Price;
 
+            if (promoRule.LumpSumAmountToReduceFromPrice > 0)
+            {
+                return CalculatePrice(carts, cart, promoRule);
+            }
             return 0;
         }
 
+        private int CalculatePrice(List<Cart> carts, Cart cart, PromotionRule promoRule)
+        {
+            var price = 0;
+            var item = _itemServices.GetItemBySkuId(cart.SkuId);
+
+            // process until item count are applicable for promo rules
+            while (promoRule.NumberOfAppearance <= cart.CountOfRemainingItemsForPromo && cart.CountOfRemainingItemsForPromo != 0)
+            {
+                price += GetProductPrice(item, promoRule.NumberOfAppearance) - promoRule.LumpSumAmountToReduceFromPrice;
+                cart.CountOfRemainingItemsForPromo = cart.CountOfRemainingItemsForPromo - promoRule.NumberOfAppearance;
+            }
+
+            if (cart.CountOfRemainingItemsForPromo > 0) // remaining item after promo rule, will process with normal calulation
+            {
+                price += GetProductPrice(item, cart.CountOfRemainingItemsForPromo);
+                cart.CountOfRemainingItemsForPromo = 0; // all item are processed
+            }
+            return price;
+        }
+
+        private int GetProductPrice(Item item, int cnt)
+        {
+            return item.Price * cnt;
+        }
 
     }
 }

@@ -48,5 +48,70 @@ namespace PromotionEngine.Test
             Assert.AreEqual(totalPrice, 100);
 
         }
+
+        [TestMethod]
+        public void ProcessBill_WhenPromotionRuleIsApplied_Then_CalculateTotalPrice_Scenario1()
+        {
+            // 3 A : final total cost : 150 - 30 = 120
+
+            //Arrange
+            var carts = new List<Cart>()
+            {
+                new Cart(Constants.A,  3)
+            };
+
+            var promotionRule = new PromotionRule
+            {
+                RuleName = "Rule_A",
+                SkuId = Constants.A,
+                NumberOfAppearance = 3,
+                LumpSumAmountToReduceFromPrice = 20,
+                PercentageToReduceFromPrice = 0
+            };
+
+            var item = new Item() { SkuId = Constants.A, Name = "A Name", Price = 50 };
+
+            _PromotionRuleServicesMock.Setup(x => x.GetPromotionRulesBySkuId(Constants.A)).Returns(promotionRule);
+            _ItemServicesMock.Setup(x => x.GetItemBySkuId(Constants.A)).Returns(item);
+
+            //Act
+            var totalPrice = OrderServices.ProcessBill(carts);
+
+            //Assert
+            Assert.AreEqual(totalPrice, 130);
+
+        }
+
+        [TestMethod]
+        public void ProcessBill_WhenPromotionRuleIsApplied_Then_CalculateTotalPrice_Scenario2()
+        {
+            // 4 A : final total cost : (150 - 30) + 50 = 180
+
+            //Arrange
+            var carts = new List<Cart>()
+            {
+                new Cart(Constants.A,  4)
+            };
+
+            var promotionRule = new PromotionRule
+            {
+                RuleName = "Rule_A",
+                SkuId = Constants.A,
+                NumberOfAppearance = 3,
+                LumpSumAmountToReduceFromPrice = 20,
+                PercentageToReduceFromPrice = 0
+            };
+
+            var item = new Item() { SkuId = Constants.A, Name = "A Name", Price = 50 };
+
+            _PromotionRuleServicesMock.Setup(x => x.GetPromotionRulesBySkuId(Constants.A)).Returns(promotionRule);
+            _ItemServicesMock.Setup(x => x.GetItemBySkuId(Constants.A)).Returns(item);
+
+            //Act
+            var totalPrice = OrderServices.ProcessBill(carts);
+
+            //Assert
+            Assert.AreEqual(totalPrice, 180);
+        }
     }
 }

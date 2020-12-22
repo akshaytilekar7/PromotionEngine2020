@@ -5,10 +5,13 @@
         public Cart(char skuId, int totalCount)
         {
             SkuId = skuId;
-            TotalCount = totalCount;
+            CountOfRemainingItemsForPromo = TotalCount = totalCount;
         }
 
         public char SkuId { get; set; }
         public int TotalCount { get; set; }
+
+        public int CountOfRemainingItemsForPromo { get; set; }
+
     }
 }
