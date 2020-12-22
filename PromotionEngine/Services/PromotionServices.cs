@@ -2,11 +2,17 @@
 using PromotionEngine.Models;
 using PromotionEngine.Services.Interfaces;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PromotionEngine.Services
 {
     public class PromotionServices : IPromotionRuleServices
     {
+        public PromotionRule GetPromotionRulesBySkuId(char skuId)
+        {
+            return GetPromotionRules().FirstOrDefault(x => x.SkuId == skuId);
+        }
+
         public List<PromotionRule> GetPromotionRules()
         {
             List<PromotionRule> promotionRules = new List<PromotionRule>()

@@ -7,5 +7,6 @@ namespace PromotionEngine.Services.Interfaces
     {
         List<PromotionRule> GetPromotionRules();
 
+        PromotionRule GetPromotionRulesBySkuId(char skuId);
     }
 }
