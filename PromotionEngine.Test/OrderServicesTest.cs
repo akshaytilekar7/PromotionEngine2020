@@ -1,14 +1,15 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace PromotionEngine.Test
 {
     [TestClass]
-    public class UnitTest1
+    public class OrderServicesTest
     {
+
         [TestMethod]
         public void TestMethod1()
         {
+
         }
     }
 }
